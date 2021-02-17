@@ -1,0 +1,2 @@
+rootProject.name = "RSEPPhase2"
+include ':app'

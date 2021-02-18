@@ -1,12 +1,20 @@
 package com.example.rsepphase2;
 
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,12 +31,22 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.rsepphase2.databinding.FragmentSecondBinding;
 
+import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SecondFragment extends Fragment {
 
+    public void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+    }
+
+
+
+
     private FragmentSecondBinding binding;
+
 
     @Override
     public View onCreateView(
@@ -43,6 +61,43 @@ public class SecondFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        String[] bankNames={"Choose Flat","Rajesh (L1-F1)","Arun Rajesj (L1-F2)","L1-S1","L1-S2","L2-F1","L2-F2","L2-S1","L2-S2","L1-F1","L1-F2","L1-S1","L1-S2"};
+        Spinner editFlatId = (Spinner) getActivity().findViewById(R.id.et_flat_id);
+        ArrayAdapter<String> myadapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_dropdown_item,bankNames);
+        myadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        editFlatId.setAdapter(myadapter);
+
+        EditText editTextUserName = (EditText) getActivity().findViewById(R.id.et_user_name);
+        editTextUserName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openDatePickerDialog(v);
+            }
+
+            public void openDatePickerDialog(final View v) {
+                Calendar cal = Calendar.getInstance();
+
+                // Get Current Date
+                DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(),
+                        (view, year, monthOfYear, dayOfMonth) -> {
+                            String selectedDate = dayOfMonth + "/" + (monthOfYear + 1) + "/" + year;
+                            switch (v.getId()) {
+                                case R.id.et_user_name:
+                                    ((EditText)v).setText(selectedDate);
+                                    break;
+                            }
+                        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+
+
+                datePickerDialog.getDatePicker().setMaxDate(cal.getTimeInMillis());
+                datePickerDialog.show();
+            }
+        });
+
+
+
+
 //
 //        binding.buttonSecond.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -52,18 +107,29 @@ public class SecondFragment extends Fragment {
 //            }
 //        });
 
+
+
+
+
+
         binding.btnAddItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText editFlatId = (EditText) getActivity().findViewById(R.id.et_flat_id);
+
                 EditText editTextUserName = (EditText) getActivity().findViewById(R.id.et_user_name);
                 EditText editTextRoom = (EditText) getActivity().findViewById(R.id.et_room);
+                EditText editTextComment = (EditText) getActivity().findViewById(R.id.et_comment);
+                Spinner editFlatId = (Spinner) getActivity().findViewById(R.id.et_flat_id);
+
+
+
                 final ProgressDialog loading = ProgressDialog.show(getActivity(),
                         "Adding Flat",
                         "Please wait");
-                final String id = editFlatId.getText().toString().trim();
-                final String name = editTextUserName.getText().toString().trim();
-                final String room = editTextRoom.getText().toString().trim();
+                final String id = editFlatId.getSelectedItem().toString().trim();
+                final String date = editTextUserName.getText().toString().trim();
+                final String amount = editTextRoom.getText().toString().trim();
+                final String comment = editTextComment.getText().toString().trim();
 
 
 
@@ -72,11 +138,11 @@ public class SecondFragment extends Fragment {
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-
+                                Log.d("resp",response);
                                 loading.dismiss();
                                 Toast.makeText(getActivity(),response,Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(getActivity().getApplicationContext(),MainActivity.class);
-                                startActivity(intent);
+//                                Intent intent = new Intent(getActivity().getApplicationContext(),MainActivity.class);
+//                                startActivity(intent);
 
                             }
                         },
@@ -92,10 +158,13 @@ public class SecondFragment extends Fragment {
                         Map<String, String> parmas = new HashMap<>();
 
                         //here we pass params
-                        parmas.put("action","addFlat");
+                        parmas.put("action","addExpense");
                         parmas.put("id",id);
-                        parmas.put("name",name);
-                        parmas.put("bedRoom",room);
+                        parmas.put("date",date);
+                        parmas.put("amount",amount);
+                        parmas.put("comment",comment);
+
+
 
                         return parmas;
                     }
@@ -112,7 +181,6 @@ public class SecondFragment extends Fragment {
             }
         });
     }
-
 
     @Override
     public void onDestroyView() {

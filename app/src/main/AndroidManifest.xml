@@ -12,13 +12,13 @@
         <activity
             android:name=".AddFlat"
             android:label="@string/title_activity_add_flat"
-            android:theme="@style/Theme.RSEPPhase2.NoActionBar">  <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter></activity>
+            android:theme="@style/Theme.RSEPPhase2.NoActionBar"> </activity>
         <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 

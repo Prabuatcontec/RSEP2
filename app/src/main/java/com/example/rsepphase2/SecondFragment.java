@@ -2,9 +2,11 @@ package com.example.rsepphase2;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,12 +14,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -31,6 +35,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.rsepphase2.databinding.FragmentSecondBinding;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -44,7 +52,7 @@ public class SecondFragment extends Fragment {
 
 
 
-
+    Button testButton;
     private FragmentSecondBinding binding;
 
 
@@ -54,6 +62,7 @@ public class SecondFragment extends Fragment {
             Bundle savedInstanceState
     ) {
 
+
         binding = FragmentSecondBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
@@ -61,12 +70,20 @@ public class SecondFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        String[] bankNames={"Choose Flat","Rajesh (L1-F1)","Arun Rajesj (L1-F2)","L1-S1","L1-S2","L2-F1","L2-F2","L2-S1","L2-S2","L1-F1","L1-F2","L1-S1","L1-S2"};
+        Bundle bundle = this.getArguments();
+        String myValue = bundle.getString("message");
+        testButton = (Button) getActivity().findViewById(R.id.btn_add_item);
+        if(myValue == "addExpense") {
+            testButton.setText("Add Expense");
+        } else {
+            testButton.setText("Add Income");
+        }
+        String[] bankNames={"Choose Owner","Rajesh (L1-F1)","Arun Rajesh (L1-F2)","Prabu L1-S1","Muthu L1-S2","Stalin L2-F1","Srini L2-F2","Mani L2-S1","Ramesh L2-S2","L3-F1","L3-F2","L3-S1","L3-S2"};
         Spinner editFlatId = (Spinner) getActivity().findViewById(R.id.et_flat_id);
         ArrayAdapter<String> myadapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_dropdown_item,bankNames);
         myadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         editFlatId.setAdapter(myadapter);
+
 
         EditText editTextUserName = (EditText) getActivity().findViewById(R.id.et_user_name);
         editTextUserName.setOnClickListener(new View.OnClickListener() {
@@ -95,23 +112,6 @@ public class SecondFragment extends Fragment {
             }
         });
 
-
-
-
-//
-//        binding.buttonSecond.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                NavHostFragment.findNavController(SecondFragment.this)
-//                        .navigate(R.id.action_SecondFragment_to_FirstFragment);
-//            }
-//        });
-
-
-
-
-
-
         binding.btnAddItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -128,58 +128,124 @@ public class SecondFragment extends Fragment {
                         "Please wait");
                 final String id = editFlatId.getSelectedItem().toString().trim();
                 final String date = editTextUserName.getText().toString().trim();
+
                 final String amount = editTextRoom.getText().toString().trim();
                 final String comment = editTextComment.getText().toString().trim();
+                String actionvalue = "";
+                if(myValue == "addExpense") {
+                      actionvalue = "Add Expense";
+                } else {
+                      actionvalue = "Add Income";
+                }
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("Confirm Order")
+                        .setMessage("Are you sure "+ actionvalue +" ?")
+                        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
 
+                        StringRequest stringRequest = new StringRequest(Request.Method.POST, "https://script.google.com/macros/s/AKfycbxhiR3V3BM0CRUpOw995rqW_ukXT9yLPWrkl_lPi_ewOD4ubx7OIjX7/exec",
+                                new Response.Listener<String>() {
+                                    @Override
+                                    public void onResponse(String response) {
+                                        Log.d("resp",response);
+                                        loading.dismiss();
+                                        editFlatId.setSelection(0);
+                                        editTextUserName.setText("");
+                                        editTextRoom.setText("");
+                                        editTextComment.setText("");
 
+//                                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(whatsappUrl()));
+//                                    startActivity(intent);
 
+                                    }
+                                },
+                                new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
 
-                StringRequest stringRequest = new StringRequest(Request.Method.POST, "https://script.google.com/macros/s/AKfycbxhiR3V3BM0CRUpOw995rqW_ukXT9yLPWrkl_lPi_ewOD4ubx7OIjX7/exec",
-                        new Response.Listener<String>() {
+                                    }
+                                }
+                        ) {
                             @Override
-                            public void onResponse(String response) {
-                                Log.d("resp",response);
-                                loading.dismiss();
-                                Toast.makeText(getActivity(),response,Toast.LENGTH_LONG).show();
-//                                Intent intent = new Intent(getActivity().getApplicationContext(),MainActivity.class);
-//                                startActivity(intent);
+                            protected Map<String, String> getParams() {
+                                Map<String, String> parmas = new HashMap<>();
 
+                                String amt = amount;
+                                if(myValue == "addExpense") {
+                                    amt = '-' + amt;
+                                }
+                                //here we pass params
+                                parmas.put("action","addExpense");
+                                parmas.put("id",id);
+                                parmas.put("date",date);
+                                parmas.put("amount",amt);
+                                parmas.put("comment",comment);
+
+
+
+                                return parmas;
                             }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
+                        };
 
-                            }
-                        }
-                ) {
-                    @Override
-                    protected Map<String, String> getParams() {
-                        Map<String, String> parmas = new HashMap<>();
+                        int socketTimeOut = 50000;// u can change this .. here it is 50 seconds
 
-                        //here we pass params
-                        parmas.put("action","addExpense");
-                        parmas.put("id",id);
-                        parmas.put("date",date);
-                        parmas.put("amount",amount);
-                        parmas.put("comment",comment);
+                        RetryPolicy retryPolicy = new DefaultRetryPolicy(socketTimeOut, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+                        stringRequest.setRetryPolicy(retryPolicy);
 
+                        RequestQueue queue = Volley.newRequestQueue(getActivity());
 
+                        queue.add(stringRequest);
 
-                        return parmas;
+                        // Con
                     }
-                };
+                })
+    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                        loading.dismiss();
+                    }
+                })
+    .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
 
-                int socketTimeOut = 50000;// u can change this .. here it is 50 seconds
 
-                RetryPolicy retryPolicy = new DefaultRetryPolicy(socketTimeOut, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-                stringRequest.setRetryPolicy(retryPolicy);
 
-                RequestQueue queue = Volley.newRequestQueue(getActivity());
 
-                queue.add(stringRequest);
             }
         });
+    }
+
+
+
+    public static String whatsappUrl(){
+
+        final String BASE_URL = "https://api.whatsapp.com/";
+        final String WHATSAPP_PHONE_NUMBER = "917401767525";    //'62' is country code for Indonesia
+        final String PARAM_PHONE_NUMBER = "phone";
+        final String PARAM_TEXT = "text";
+        final String TEXT_VALUE = "Hello, How are you ?";
+
+        String newUrl = BASE_URL + "send";
+
+        Uri builtUri = Uri.parse(newUrl).buildUpon()
+                .appendQueryParameter(PARAM_PHONE_NUMBER, WHATSAPP_PHONE_NUMBER)
+                .appendQueryParameter(PARAM_TEXT, TEXT_VALUE)
+                .build();
+
+        return buildUrl(builtUri).toString();
+    }
+
+    public static URL buildUrl(Uri myUri){
+
+        URL finalUrl = null;
+        try {
+            finalUrl = new URL(myUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+
+        }
+        return finalUrl;
     }
 
     @Override

@@ -3,27 +3,20 @@ package com.example.rsepphase2;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -35,11 +28,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.rsepphase2.databinding.FragmentSecondBinding;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +40,7 @@ public class SecondFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
-
+    private static final String APPLICATION_NAME = "RSEP2";
 
     Button testButton;
     private FragmentSecondBinding binding;
@@ -68,21 +58,30 @@ public class SecondFragment extends Fragment {
 
     }
 
+
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Bundle bundle = this.getArguments();
         String myValue = bundle.getString("message");
         testButton = (Button) getActivity().findViewById(R.id.btn_add_item);
+        Spinner editFlatId = (Spinner) getActivity().findViewById(R.id.et_flat_id);
         if(myValue == "addExpense") {
             testButton.setText("Add Expense");
+            String[] bankNames={"Choose Reason","Lift", "STP", "Commom", "Others"};
+            ArrayAdapter<String> myadapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_dropdown_item,bankNames);
+            myadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            editFlatId.setAdapter(myadapter);
         } else {
             testButton.setText("Add Income");
+            String[] bankNames={"Choose Owner","Rajesh (L1-F1)","Arun Rajesh (L1-F2)","Prabu L1-S1","Muthu L1-S2","Stalin L2-F1","Srini L2-F2","Mani L2-S1","Ramesh L2-S2","L3-F1","L3-F2","L3-S1","L3-S2"};
+            ArrayAdapter<String> myadapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_dropdown_item,bankNames);
+            myadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            editFlatId.setAdapter(myadapter);
         }
-        String[] bankNames={"Choose Owner","Rajesh (L1-F1)","Arun Rajesh (L1-F2)","Prabu L1-S1","Muthu L1-S2","Stalin L2-F1","Srini L2-F2","Mani L2-S1","Ramesh L2-S2","L3-F1","L3-F2","L3-S1","L3-S2"};
-        Spinner editFlatId = (Spinner) getActivity().findViewById(R.id.et_flat_id);
-        ArrayAdapter<String> myadapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_dropdown_item,bankNames);
-        myadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        editFlatId.setAdapter(myadapter);
+
+
+
+
 
 
         EditText editTextUserName = (EditText) getActivity().findViewById(R.id.et_user_name);
@@ -124,7 +123,7 @@ public class SecondFragment extends Fragment {
 
 
                 final ProgressDialog loading = ProgressDialog.show(getActivity(),
-                        "Adding Flat",
+                        "Adding...",
                         "Please wait");
                 final String id = editFlatId.getSelectedItem().toString().trim();
                 final String date = editTextUserName.getText().toString().trim();
